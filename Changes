@@ -1,3 +1,6 @@
+0.05    6 Jun 2006
+        Internal speed improvement and bugfix for location SQL query
+
 0.04    14 May 2006
         Rename to Wiki::Toolkit::Plugin::Locator::Grid
         Move to new Wiki::Toolkit schema.

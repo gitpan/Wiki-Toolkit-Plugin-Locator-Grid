@@ -3,7 +3,7 @@ package Wiki::Toolkit::Plugin::Locator::Grid;
 use strict;
 
 use vars qw( $VERSION @ISA );
-$VERSION = '0.04';
+$VERSION = '0.05';
 
 use Carp qw( croak );
 use Wiki::Toolkit::Plugin;
@@ -226,15 +226,20 @@ sub find_within_distance {
     # Only consider nodes within the square containing the circle of
     # radius $distance.  The SELECT DISTINCT is needed because we might
     # have multiple versions in the table.
-    my $sql = "SELECT DISTINCT x.name FROM node AS x INNER JOIN metadata
-              AS mx ON (mx.node_id = x.id), node AS y INNER JOIN metadata my
-              ON (my.node_id = y.id) WHERE mx.metadata_type = '$self->{x}'
-                  AND my.metadata_type = '$self->{y}'
-                  AND mx.metadata_value >= " . ($sx - $metres)
-            . "   AND mx.metadata_value <= " . ($sx + $metres)
-            . "   AND my.metadata_value >= " . ($sy - $metres)
-            . "   AND my.metadata_value <= " . ($sy + $metres)
-            . "   AND x.name = y.name";
+    my $sql = "SELECT DISTINCT x.name ".
+			  "FROM node AS x ".
+			  "INNER JOIN metadata AS mx ".
+			  "   ON (mx.node_id = x.id AND mx.version = x.version) ".
+			  "INNER JOIN node AS y ".
+			  "   ON (x.id = y.id) ".
+			  "INNER JOIN metadata my ".
+              "   ON (my.node_id = y.id AND my.version = y.version) ".
+			  " WHERE mx.metadata_type = '$self->{x}' ".
+              "   AND my.metadata_type = '$self->{y}' ".
+              "   AND mx.metadata_value >= " . ($sx - $metres) .
+              "   AND mx.metadata_value <= " . ($sx + $metres) .
+              "   AND my.metadata_value >= " . ($sy - $metres) .
+              "   AND my.metadata_value <= " . ($sy + $metres);
     $sql .= "     AND x.name != " . $dbh->quote($args{node})
         if $args{node};
     # Postgres is a fussy bugger.
